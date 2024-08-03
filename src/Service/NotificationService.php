@@ -31,22 +31,29 @@ class NotificationService
     private int $throttlingPeriod;
 
     private bool $trackingEnabled;
-
-    private MailerInterface $mailer;
-
     private int $attempts = 0;
 
     public function __construct(
         array $smsProviders,
         array $emailProviders,
         array $pushNotificationProviders,
-        bool $failover
+        bool $failover,
+        int $maxAttempts,
+        bool $throttlingEnabled,
+        int $throttlingLimit,
+        int $throttlingPeriod,
+        bool $trackingEnabled
     )
     {
         $this->smsProviders = $smsProviders;
         $this->emailProviders = $emailProviders;
         $this->pushNotificationProviders = $pushNotificationProviders;
         $this->failover = $failover;
+        $this->maxAttempts = $maxAttempts;
+        $this->throttlingEnabled = $throttlingEnabled;
+        $this->throttlingLimit = $throttlingLimit;
+        $this->throttlingPeriod = $throttlingPeriod;
+        $this->trackingEnabled = $trackingEnabled;
     }
 
     public function sendSms(string $to, string $message, string $userId)
@@ -60,6 +67,11 @@ class NotificationService
     }
 
     public function sendPushNotification(string $to, string $message, string $userId)
+    {
+
+    }
+
+    public function sendNotification(string $type,string $to,string $content,string $userId)
     {
 
     }

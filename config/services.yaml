@@ -22,3 +22,38 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Service\NotificationService:
+        arguments:
+            $smsProviders:
+                aws_sns:
+                    enabled: '%env(bool:AWS_SNS_ENABLED)%'
+                    api_key: '%env(AWS_SNS_API_KEY)%'
+                    api_secret: '%env(AWS_SNS_API_SECRET)%'
+                twilio:
+                    enabled: '%env(bool:TWILIO_ENABLED)%'
+                    account_sid: '%env(TWILIO_ACCOUNT_SID)%'
+                    auth_token: '%env(TWILIO_AUTH_TOKEN)%'
+            $emailProviders:
+                aws_ses:
+                    enabled: '%env(bool:AWS_SES_ENABLED)%'
+                    api_key: '%env(AWS_SES_API_KEY)%'
+                    api_secret: '%env(AWS_SES_API_SECRET)%'
+                smtp:
+                    enabled: '%env(bool:SMTP_ENABLED)%'
+                    host: '%env(SMTP_HOST)%'
+                    port: '%env(int:SMTP_PORT)%'
+                    username: '%env(SMTP_USERNAME)%'
+                    password: '%env(SMTP_PASSWORD)%'
+                    encryption: '%env(SMTP_ENCRYPTION)%'
+                    mailer: '@mailer'
+            $pushNotificationProviders:
+                pushy:
+                    enabled: '%env(bool:PUSHY_ENABLED)%'
+                    api_key: '%env(PUSHY_API_KEY)%'
+            $failover: '%env(bool:NOTIFICATION_FAILOVER)%'
+            $maxAttempts: '%env(int:NOTIFICATION_MAX_ATTEMPTS)%'
+            $throttlingEnabled: '%env(bool:NOTIFICATION_THROTTLING_ENABLED)%'
+            $throttlingLimit: '%env(int:NOTIFICATION_THROTTLING_LIMIT)%'
+            $throttlingPeriod: '%env(int:NOTIFICATION_THROTTLING_PERIOD)%'
+            $trackingEnabled: '%env(bool:NOTIFICATION_TRACKING_ENABLED)%'

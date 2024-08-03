@@ -33,12 +33,12 @@ class SmtpProvider implements EmailProviderInterface
     public function sendEmail(string $to, string $subject, string $body): void
     {
         /* symfony mailer? - to be installed, then handle this here  */
-//        $email = (new Email())
-//            ->from('your-email@example.com')
-//            ->to($to)
-//            ->subject($subject)
-//            ->text($body);
-//
-//        $this->mailer->send($email);
+        $email = (new Email())
+            ->from('dev@codingmice.com')
+            ->to($to)
+            ->subject($subject)
+            ->text($body);
+
+        $this->mailer->send($email);
     }
 }

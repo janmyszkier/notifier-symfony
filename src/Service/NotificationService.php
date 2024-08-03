@@ -2,20 +2,15 @@
 
 namespace App\Service;
 
+use App\Service\Factory\ProviderFactory;
 use App\Service\Provider\EmailProviderInterface;
 use App\Service\Provider\PushNotificationProviderInterface;
 use App\Service\Provider\SmsProviderInterface;
 
 class NotificationService
 {
-    /* @var SmsProviderInterface[] $smsProviders */
-    private array $smsProviders = [];
-
-    /* @var EmailProviderInterface[] $emailProviders */
-    private array $emailProviders = [];
-
-    /* @var PushNotificationProviderInterface[] $pushNotificationProviders */
-    private array $pushNotificationProviders = [];
+    /* make an interface and inject it here */
+    private ProviderFactory $providerFactory;
 
     private bool $failover;
 
@@ -34,9 +29,7 @@ class NotificationService
     private int $attempts = 0;
 
     public function __construct(
-        array $smsProviders,
-        array $emailProviders,
-        array $pushNotificationProviders,
+        ProviderFactory $providerFactory,
         bool $failover,
         int $maxAttempts,
         bool $throttlingEnabled,
@@ -45,9 +38,7 @@ class NotificationService
         bool $trackingEnabled
     )
     {
-        $this->smsProviders = $smsProviders;
-        $this->emailProviders = $emailProviders;
-        $this->pushNotificationProviders = $pushNotificationProviders;
+        $this->providerFactory = $providerFactory;
         $this->failover = $failover;
         $this->maxAttempts = $maxAttempts;
         $this->throttlingEnabled = $throttlingEnabled;
@@ -61,9 +52,20 @@ class NotificationService
 
     }
 
-    public function sendEmail(string $to, string $subject, string $body, string $userId)
+    public function sendEmail(string $providerName, string $to, string $subject, string $body, string $userId)
     {
+        $emailProvider = $this->providerFactory->createEmailProvider($providerName);
 
+        /* @FIXME: inject logger and use it */
+        try {
+            $emailProvider->sendEmail($to, $subject, $body);
+            var_dump('message sent');
+        } catch (\Exception $e) {
+
+            var_dump($e->getMessage());
+            var_dump($e->getTraceAsString());
+            // Handle failover and retry logic
+        }
     }
 
     public function sendPushNotification(string $to, string $message, string $userId)

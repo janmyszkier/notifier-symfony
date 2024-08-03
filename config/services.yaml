@@ -25,6 +25,7 @@ services:
 
     App\Service\NotificationService:
         arguments:
+            $providerFactory: '@App\Service\Factory\ProviderFactory'
             $failover: '%env(bool:NOTIFICATION_FAILOVER)%'
             $maxAttempts: '%env(int:NOTIFICATION_MAX_ATTEMPTS)%'
             $throttlingEnabled: '%env(bool:NOTIFICATION_THROTTLING_ENABLED)%'
@@ -66,3 +67,46 @@ services:
         arguments:
             $apiKey: '%env(PUSHY_API_KEY)%'
         tags: ['push_notification_provider']
+
+    #All Provider Factory
+    app.sms_providers_locator:
+        class: Symfony\Component\DependencyInjection\ServiceLocator
+        arguments:
+            - aws_sns: '@App\Service\Provider\AwsSnsProvider'
+              twilio: '@App\Service\Provider\TwilioProvider'
+
+    app.email_providers_locator:
+        class: Symfony\Component\DependencyInjection\ServiceLocator
+        arguments:
+            - aws_ses: '@App\Service\Provider\AwsSesProvider'
+              smtp: '@App\Service\Provider\SmtpProvider'
+
+    app.push_notification_providers_locator:
+        class: Symfony\Component\DependencyInjection\ServiceLocator
+        arguments:
+            - pushy: '@App\Service\Provider\PushyProvider'
+
+    App\Service\Factory\ProviderFactory:
+        arguments:
+            $smsProviders: '@app.sms_providers_locator'
+            $emailProviders: '@app.email_providers_locator'
+            $pushNotificationProviders: '@app.push_notification_providers_locator'
+            $smsProvidersConfig:
+                aws_sns:
+                    enabled: '%env(bool:AWS_SNS_ENABLED)%'
+                twilio:
+                    enabled: '%env(bool:TWILIO_ENABLED)%'
+            $emailProvidersConfig:
+                aws_ses:
+                    enabled: '%env(bool:AWS_SES_ENABLED)%'
+                smtp:
+                    enabled: '%env(bool:SMTP_ENABLED)%'
+            $pushNotificationProvidersConfig:
+                pushy:
+                    enabled: '%env(bool:PUSHY_ENABLED)%'
+
+    App\Command\NotificationEmailSendCommand:
+        arguments:
+            $notificationService: '@App\Service\NotificationService'
+        tags:
+            - { name: 'console.command' }

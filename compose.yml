@@ -1,0 +1,11 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: myszkier_php
+    working_dir: /var/www/symfony
+    volumes:
+      - .:/var/www/symfony
+    environment:
+      SYMFONY_ENV: dev

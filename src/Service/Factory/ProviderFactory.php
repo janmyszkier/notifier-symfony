@@ -49,6 +49,13 @@ class ProviderFactory
 
     public function createPushNotificationProvider(string $providerName): PushNotificationProviderInterface
     {
+        $config = $this->pushNotificationProvidersConfig[$providerName] ?? null;
+        if ($config && $config['enabled']) {
+            if ($this->pushNotificationProviders->has($providerName)) {
+                return $this->pushNotificationProviders->get($providerName);
+            }
+            throw new InvalidArgumentException("Push notification provider service not found: $providerName");
+        }
         throw new InvalidArgumentException("Push notification provider not enabled: $providerName");
     }
 
@@ -67,5 +74,14 @@ class ProviderFactory
     public function getSmsProvidersConfig()
     {
         return $this->smsProvidersConfig;
+    }
+
+    public function getPushNotificationProviders(): ServiceLocator
+    {
+        return $this->pushNotificationProviders;
+    }
+    public function getPushNotificationProvidersConfig()
+    {
+        return $this->pushNotificationProvidersConfig;
     }
 }

@@ -43,7 +43,7 @@ class NotificationService
         $this->trackingEnabled = $trackingEnabled;
     }
 
-    public function sendSms(string $to, string $message, string $userId)
+    public function sendSms(string $to, string $message, string $userId): bool
     {
         $emailProviders = $this->providerFactory->getSmsProviders();
         $smsConfig = $this->providerFactory->getSmsProvidersConfig();
@@ -67,13 +67,13 @@ class NotificationService
         return false;
     }
 
-    public function sendEmail(string $to, string $subject, string $body, string $userId)
+    public function sendEmail(string $to, string $subject, string $body, string $userId): bool
     {
         $emailProviders = $this->providerFactory->getEmailProviders();
+        $emailProvidersConfig = $this->providerFactory->getEmailProvidersConfig();
         foreach ($emailProviders as $providerName => $config) {
-            $config = $this->providerFactory->getEmailProvidersConfig();
 
-            if (!$config[$providerName]['enabled']) {
+            if (!$emailProvidersConfig[$providerName]['enabled']) {
                 /* Skip disabled provider */
                 continue;
             }
@@ -90,9 +90,27 @@ class NotificationService
         return false;
     }
 
-    public function sendPushNotification(string $to, string $message, string $userId)
+    public function sendPushNotification(string $to, string $message, string $userId): bool
     {
+        $pushNotificationProviders = $this->providerFactory->getPushNotificationProviders();
+        $pushNotificationProvidersConfig = $this->providerFactory->getPushNotificationProvidersConfig();
+        foreach ($pushNotificationProviders as $providerName => $config) {
 
+            if (!$pushNotificationProvidersConfig[$providerName]['enabled']) {
+                /* Skip disabled provider */
+                continue;
+            }
+
+            $pushNotificationProvider = $this->providerFactory->createPushNotificationProvider($providerName);
+            try {
+                $pushNotificationProvider->sendPushNotification($to, $message);
+            } catch (\Exception $e) {
+                /* @FIXME: add logger later */
+            }
+            return true;
+        }
+
+        return false;
     }
 
     public function sendNotification(string $type,string $to,string $content,string $userId)

@@ -2,6 +2,8 @@
 
 namespace App\Service\Provider;
 
+use App\Model\NotificationRecipient;
+
 class TwilioProvider implements SmsProviderInterface
 {
 
@@ -13,11 +15,14 @@ class TwilioProvider implements SmsProviderInterface
     {
     }
 
-    public function sendSms(string $to, string $message): void
+    public function sendSms(NotificationRecipient $recipient, string $message): void
     {
+        if(!$recipient->getPhoneNumber()){
+            return;
+        }
         $client = new \Twilio\Rest\Client($this->accountSid, $this->authToken);
         $client->messages->create(
-            $to,
+            $recipient->getPhoneNumber(),
             [
                 'from' => $this->phoneNumber,
                 'body' => $message,

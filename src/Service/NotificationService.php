@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Model\NotificationRecipient;
 use App\Service\Factory\ProviderFactory;
 use App\Service\Provider\EmailProviderInterface;
 use App\Service\Provider\PushNotificationProviderInterface;
@@ -43,7 +44,7 @@ class NotificationService
         $this->trackingEnabled = $trackingEnabled;
     }
 
-    public function sendSms(string $to, string $message, string $userId): bool
+    public function sendSms(NotificationRecipient $recipient, string $message, string $userId): bool
     {
         $emailProviders = $this->providerFactory->getSmsProviders();
         $smsConfig = $this->providerFactory->getSmsProvidersConfig();
@@ -57,7 +58,7 @@ class NotificationService
 
             $smsProvider = $this->providerFactory->createSmsProvider($providerName);
             try {
-                $smsProvider->sendSms($to, $message);
+                $smsProvider->sendSms($recipient, $message);
             } catch (\Exception $e) {
                 /* @FIXME: add logger later */
             }
@@ -67,7 +68,7 @@ class NotificationService
         return false;
     }
 
-    public function sendEmail(string $to, string $subject, string $body, string $userId): bool
+    public function sendEmail(NotificationRecipient $recipient, string $subject, string $body, string $userId): bool
     {
         $emailProviders = $this->providerFactory->getEmailProviders();
         $emailProvidersConfig = $this->providerFactory->getEmailProvidersConfig();
@@ -80,7 +81,7 @@ class NotificationService
 
             $emailProvider = $this->providerFactory->createEmailProvider($providerName);
             try {
-                $emailProvider->sendEmail($to, $subject, $body);
+                $emailProvider->sendEmail($recipient, $subject, $body);
             } catch (\Exception $e) {
                 /* @FIXME: add logger later */
             }
@@ -90,7 +91,7 @@ class NotificationService
         return false;
     }
 
-    public function sendPushNotification(string $to, string $message, string $userId): bool
+    public function sendPushNotification(NotificationRecipient $recipient, string $message, string $userId): bool
     {
         $pushNotificationProviders = $this->providerFactory->getPushNotificationProviders();
         $pushNotificationProvidersConfig = $this->providerFactory->getPushNotificationProvidersConfig();
@@ -103,7 +104,7 @@ class NotificationService
 
             $pushNotificationProvider = $this->providerFactory->createPushNotificationProvider($providerName);
             try {
-                $pushNotificationProvider->sendPushNotification($to, $message);
+                $pushNotificationProvider->sendPushNotification($recipient, $message);
             } catch (\Exception $e) {
                 /* @FIXME: add logger later */
             }
@@ -113,8 +114,59 @@ class NotificationService
         return false;
     }
 
-    public function sendNotification(string $type,string $to,string $content,string $userId)
+    public function sendNotification(NotificationRecipient $recipient, ?string $subject, string $body, string $userId, array $channels): void
     {
+        foreach ($channels as $channel) {
+            $providersLocator = null;
+            $providersConfig = null;
+            $messageSendViaChannel = false;
+
+            switch ($channel) {
+                case 'email':
+                    $providersLocator = $this->providerFactory->getEmailProviders();
+                    $providersConfig = $this->providerFactory->getEmailProvidersConfig();
+                    break;
+                case 'sms':
+                    $providersLocator = $this->providerFactory->getSmsProviders();
+                    $providersConfig = $this->providerFactory->getSmsProvidersConfig();
+                    break;
+                case 'push_notification':
+                    $providersLocator = $this->providerFactory->getPushNotificationProviders();
+                    $providersConfig = $this->providerFactory->getPushNotificationProvidersConfig();
+                    break;
+            }
+
+            if (!$providersLocator || !$providersConfig) {
+                continue;
+            }
+
+            foreach ($providersConfig as $providerName => $config) {
+                if($messageSendViaChannel === true){
+                    continue;
+                }
+                if (!$providersConfig[$providerName]['enabled']) {
+                    continue;
+                }
+
+                try {
+                    if ($providersLocator->has($providerName)) {
+                        $provider = $providersLocator->get($providerName);
+
+                        match($channel){
+                            'sms' => $provider->sendSms($recipient, $body),
+                            'email' => $provider->sendEmail($recipient, $subject, $body),
+                            'push_notification' => $provider->sendPushNotification($recipient, $body)
+                        };
+                        $messageSendViaChannel = true;
+                        var_dump("Sent notification via $providerName for channel $channel: ");
+                    }
+                } catch (\Exception $e) {
+                    $messageSendViaChannel = false;
+                    var_dump("Failed to send notification via $providerName for channel $channel: " . $e->getMessage());
+                }
+            }
+
+        }
 
     }
 

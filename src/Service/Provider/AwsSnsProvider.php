@@ -2,6 +2,8 @@
 
 namespace App\Service\Provider;
 
+use App\Model\NotificationRecipient;
+
 class AwsSnsProvider implements SmsProviderInterface
 {
     private $apiKey;
@@ -20,8 +22,11 @@ class AwsSnsProvider implements SmsProviderInterface
         $this->region = $region;
     }
 
-    public function sendSms(string $to, string $message): void
+    public function sendSms(NotificationRecipient $recipient, string $message): void
     {
+        if(!$recipient->getPhoneNumber()){
+            return;
+        }
          $client = new \Aws\Sns\SnsClient([
              'version' => 'latest',
              'region'  => $this->region,
@@ -32,7 +37,7 @@ class AwsSnsProvider implements SmsProviderInterface
          ]);
          $client->publish([
              'Message' => $message,
-             'PhoneNumber' => $to,
+             'PhoneNumber' => $recipient->getPhoneNumber(),
          ]);
     }
 }

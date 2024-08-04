@@ -2,7 +2,9 @@
 
 namespace App\Service\Provider;
 
+use App\Model\NotificationRecipient;
+
 interface PushNotificationProviderInterface
 {
-    public function sendPushNotification(string $to, string $message): void;
+    public function sendPushNotification(NotificationRecipient $recipient, string $message): void;
 }

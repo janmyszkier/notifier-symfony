@@ -2,6 +2,7 @@
 
 namespace App\Service\Provider;
 
+use App\Model\NotificationRecipient;
 use Jlorente\Pushy\Pushy;
 
 class PushyProvider implements PushNotificationProviderInterface
@@ -13,11 +14,14 @@ class PushyProvider implements PushNotificationProviderInterface
         $this->apiKey = $apiKey;
     }
 
-    public function sendPushNotification(string $to, string $message) :void
+    public function sendPushNotification(NotificationRecipient $recipient, string $message) :void
     {
+        if(!$recipient->getDeviceToken()){
+            return;
+        }
          $client = new Pushy($this->apiKey);
          $client->api()->sendNotifications([
-             'to' => $to,
+             'to' => $recipient->getDeviceToken(),
              'data' => $message
          ]);
     }

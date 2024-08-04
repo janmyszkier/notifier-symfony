@@ -2,6 +2,7 @@
 
 namespace App\Service\Provider;
 
+use App\Model\NotificationRecipient;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
@@ -30,12 +31,15 @@ class SmtpProvider implements EmailProviderInterface
         $this->encryption = $encryption;
     }
 
-    public function sendEmail(string $to, string $subject, string $body): void
+    public function sendEmail(NotificationRecipient $recipient, string $subject, string $body): void
     {
+        if(!$recipient->getEmail()){
+            return;
+        }
         /* symfony mailer? - to be installed, then handle this here  */
         $email = (new Email())
             ->from('dev@codingmice.com')
-            ->to($to)
+            ->to($recipient->getEmail())
             ->subject($subject)
             ->text($body);
 

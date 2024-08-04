@@ -2,7 +2,9 @@
 
 namespace App\Service\Provider;
 
+use App\Model\NotificationRecipient;
+
 interface SmsProviderInterface
 {
-    public function sendSms(string $to, string $message): void;
+    public function sendSms(NotificationRecipient $recipient, string $message): void;
 }

@@ -2,6 +2,8 @@
 
 namespace App\Service\Provider;
 
+use App\Model\NotificationRecipient;
+
 class AwsSesProvider implements EmailProviderInterface
 {
     private $apiKey;
@@ -15,8 +17,11 @@ class AwsSesProvider implements EmailProviderInterface
         $this->region = $region;
     }
 
-    public function sendEmail(string $to, string $subject, string $body): void
+    public function sendEmail(NotificationRecipient $recipient, string $subject, string $body): void
     {
+        if(!$recipient->getEmail()){
+            return;
+        }
          $client = new \Aws\Ses\SesClient([
              'version' => 'latest',
              'region'  => $this->region,
@@ -29,7 +34,7 @@ class AwsSesProvider implements EmailProviderInterface
              /* @TODO: make this env-based */
              'Source' => 'dev@codingmice.com',
              'Destination' => [
-                 'ToAddresses' => [$to],
+                 'ToAddresses' => [$recipient->getEmail()],
              ],
              'Message' => [
                  'Subject' => [

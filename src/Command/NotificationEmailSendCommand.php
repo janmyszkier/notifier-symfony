@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Model\NotificationRecipient;
 use Symfony\Component\Console\Attribute\AsCommand;
 use App\Service\NotificationService;
 use Symfony\Component\Console\Command\Command;
@@ -35,8 +36,10 @@ class NotificationEmailSendCommand extends Command
         $body = $input->getArgument('body');
         $userId = $input->getArgument('userId');
 
+        $recipient = new NotificationRecipient($to);
+
         try {
-            $this->notificationService->sendEmail($to, $subject, $body,$userId);
+            $this->notificationService->sendEmail($recipient, $subject, $body,$userId);
             $output->writeln("Email sent successfully.");
             return Command::SUCCESS;
         } catch (\Exception $e) {

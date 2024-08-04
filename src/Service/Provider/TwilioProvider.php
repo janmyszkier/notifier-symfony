@@ -4,13 +4,13 @@ namespace App\Service\Provider;
 
 class TwilioProvider implements SmsProviderInterface
 {
-    private $accountSid;
-    private $authToken;
 
-    public function __construct(string $accountSid, string $authToken)
+    public function __construct(
+        private string $accountSid,
+        private string $authToken,
+        private string $phoneNumber
+    )
     {
-        $this->accountSid = $accountSid;
-        $this->authToken = $authToken;
     }
 
     public function sendSms(string $to, string $message): void
@@ -19,8 +19,7 @@ class TwilioProvider implements SmsProviderInterface
         $client->messages->create(
             $to,
             [
-                /* @TODO: make this env based */
-                'from' => '+48505396591',
+                'from' => $this->phoneNumber,
                 'body' => $message,
             ]
         );

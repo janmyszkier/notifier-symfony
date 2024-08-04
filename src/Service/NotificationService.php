@@ -45,7 +45,26 @@ class NotificationService
 
     public function sendSms(string $to, string $message, string $userId)
     {
+        $emailProviders = $this->providerFactory->getSmsProviders();
+        $smsConfig = $this->providerFactory->getSmsProvidersConfig();
 
+        foreach ($emailProviders as $providerName => $config) {
+
+            if (!$smsConfig[$providerName]['enabled']) {
+                /* Skip disabled provider */
+                continue;
+            }
+
+            $smsProvider = $this->providerFactory->createSmsProvider($providerName);
+            try {
+                $smsProvider->sendSms($to, $message);
+            } catch (\Exception $e) {
+                /* @FIXME: add logger later */
+            }
+            return true;
+        }
+
+        return false;
     }
 
     public function sendEmail(string $to, string $subject, string $body, string $userId)

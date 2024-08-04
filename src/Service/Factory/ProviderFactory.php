@@ -23,6 +23,14 @@ class ProviderFactory
 
     public function createSmsProvider(string $providerName): SmsProviderInterface
     {
+        $config = $this->smsProvidersConfig[$providerName] ?? null;
+        if ($config && $config['enabled']) {
+            if ($this->smsProviders->has($providerName)) {
+                return $this->smsProviders->get($providerName);
+            }
+            throw new InvalidArgumentException("SMS provider service not found: $providerName");
+        }
+
         throw new InvalidArgumentException("SMS provider not enabled: $providerName");
     }
 
@@ -51,5 +59,13 @@ class ProviderFactory
     public function getEmailProvidersConfig()
     {
         return $this->emailProvidersConfig;
+    }
+    public function getSmsProviders(): ServiceLocator
+    {
+        return $this->smsProviders;
+    }
+    public function getSmsProvidersConfig()
+    {
+        return $this->smsProvidersConfig;
     }
 }

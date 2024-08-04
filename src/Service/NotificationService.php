@@ -50,32 +50,25 @@ class NotificationService
 
     public function sendEmail(string $to, string $subject, string $body, string $userId)
     {
-        foreach ($this->providerFactory->getEmailProviders() as $providerName => $config) {
+        $emailProviders = $this->providerFactory->getEmailProviders();
+        foreach ($emailProviders as $providerName => $config) {
             $config = $this->providerFactory->getEmailProvidersConfig();
 
             if (!$config[$providerName]['enabled']) {
+                /* Skip disabled provider */
                 continue;
             }
 
+            $emailProvider = $this->providerFactory->createEmailProvider($providerName);
             try {
-                if ($this->providerFactory->getEmailProviders()->has($providerName)) {
-                    $emailProvider = $this->providerFactory->createEmailProvider($providerName);
-                    try {
-                        $emailProvider->sendEmail($to, $subject, $body);
-                        var_dump('message sent');
-                    } catch (\Exception $e) {
-
-                        var_dump($e->getMessage());
-                        var_dump($e->getTraceAsString());
-                    }
-                    return true;
-                }
+                $emailProvider->sendEmail($to, $subject, $body);
             } catch (\Exception $e) {
-                var_dump("Failed to send email via $providerName: " . $e->getMessage());
+                /* @FIXME: add logger later */
             }
+            return true;
         }
 
-
+        return false;
     }
 
     public function sendPushNotification(string $to, string $message, string $userId)

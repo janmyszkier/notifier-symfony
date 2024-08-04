@@ -22,7 +22,6 @@ class NotificationEmailSendCommand extends Command
     {
         $this
             ->setDescription('Send an email using the NotificationService.')
-            ->addArgument('provider', InputArgument::REQUIRED, 'The email provider to use (e.g., aws_ses, smtp).')
             ->addArgument('to', InputArgument::REQUIRED, 'The recipient email address.')
             ->addArgument('subject', InputArgument::REQUIRED, 'The subject of the email.')
             ->addArgument('body', InputArgument::REQUIRED, 'The body of the email.')
@@ -31,15 +30,14 @@ class NotificationEmailSendCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $provider = $input->getArgument('provider');
         $to = $input->getArgument('to');
         $subject = $input->getArgument('subject');
         $body = $input->getArgument('body');
         $userId = $input->getArgument('userId');
 
         try {
-            $this->notificationService->sendEmail($provider, $to, $subject, $body,$userId);
-            $output->writeln("Email sent successfully using provider '$provider'.");
+            $this->notificationService->sendEmail($to, $subject, $body,$userId);
+            $output->writeln("Email sent successfully.");
             return Command::SUCCESS;
         } catch (\Exception $e) {
             $output->writeln("Failed to send email: " . $e->getMessage());

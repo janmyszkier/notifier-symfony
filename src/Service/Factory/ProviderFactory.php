@@ -43,4 +43,13 @@ class ProviderFactory
     {
         throw new InvalidArgumentException("Push notification provider not enabled: $providerName");
     }
+
+    public function getEmailProviders(): ServiceLocator
+    {
+        return $this->emailProviders;
+    }
+    public function getEmailProvidersConfig()
+    {
+        return $this->emailProvidersConfig;
+    }
 }

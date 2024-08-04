@@ -26,7 +26,6 @@ services:
     App\Service\NotificationService:
         arguments:
             $providerFactory: '@App\Service\Factory\ProviderFactory'
-            $failover: '%env(bool:NOTIFICATION_FAILOVER)%'
             $maxAttempts: '%env(int:NOTIFICATION_MAX_ATTEMPTS)%'
             $throttlingEnabled: '%env(bool:NOTIFICATION_THROTTLING_ENABLED)%'
             $throttlingLimit: '%env(int:NOTIFICATION_THROTTLING_LIMIT)%'
